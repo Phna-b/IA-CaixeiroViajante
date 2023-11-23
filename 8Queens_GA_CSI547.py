@@ -1,7 +1,7 @@
 from scipy import special as sc
 # Constants, experiment parameters
 NUM_QUEENS = 8 #Numero de rainhas
-POPULATION_SIZE = 10 #Numero de individuos utilizados ao longo das gerações
+POPULATION_SIZE = 5 #Numero de individuos utilizados ao longo das gerações
 MIXING_NUMBER = 2 # Numero de pontos de cruzamento
 MUTATION_RATE = 0.05 #Chance de cada filho sofrer mutação (5%)
 
@@ -135,7 +135,7 @@ def generate_population():
     population = []
 
     for individual in range(POPULATION_SIZE):
-        new = [random.randrange(NUM_QUEENS) for idx in range(NUM_QUEENS)]
+        new = [random.randrange(NUM_QUEENS) for idx in range(NUM_QUEENS)] # Gera um numero aleatorio para cada rainha
         population.append(new)
 
     return population
@@ -148,7 +148,7 @@ generation = 0
 
 # Generate Random Population
 population = generate_population()
-print_found_goal(population)
+#print_found_goal(population)
 
 # Generations until found the solution
 while not print_found_goal(population):
