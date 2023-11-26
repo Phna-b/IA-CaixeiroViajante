@@ -149,10 +149,7 @@ generation = 0
 # Generate Random Population
 population = generate_population()
 #print_found_goal(population)
-
+offsprings = crossover(population)
+list(map(mutate, offsprings))
 # Generations until found the solution
-while not print_found_goal(population):
-    print(f'Generation: {generation}')
-    print_found_goal(population)
-    population = evolution(population)
-    generation += 1
+print(offsprings)

@@ -120,7 +120,10 @@ def crossover(parents):
     return offsprings
 
 
-rota_aleatoria_gerada = generate_population("Contagem", "Raposos")
+
+
+
+rota_aleatoria_gerada = generate_population("Belo Horizonte", "Raposos")
 
 
 for i in range(len(rota_aleatoria_gerada)):
@@ -130,23 +133,18 @@ for i in range(len(rota_aleatoria_gerada)):
     print(f"A distância total da rota é: {distancia_total_exemplo}\n")
 
 
-
-
-
-
-
-
-
 rota_select = selection(rota_aleatoria_gerada)
 cross = crossover(rota_select)
 
-for i in range(len(rota_select)):
-    print(f"Rota {i+1}")
-    print(rota_select[i]) 
+for i in range(len(cross)):
     print(cross[i]) 
-    distancia_total_exemplo = fitness_score(MAPA_CIDADES, rota_select[i])
-    print(f"A distância total da rota é: {distancia_total_exemplo}\n")
-    print(f"A distância total da rota cross é: {fitness_score(MAPA_CIDADES, cross[i])}\n")
+#for i in range(len(rota_select)):
+#    print(f"Rota {i+1}")
+#    print(rota_select[i]) 
+#    print(cross[i]) 
+#    distancia_total_exemplo = fitness_score(MAPA_CIDADES, rota_select[i])
+#    print(f"A distância total da rota é: {distancia_total_exemplo}\n")
+#    print(f"A distância total da rota cross é: {fitness_score(MAPA_CIDADES, cross[i])}\n")
 
  
 
