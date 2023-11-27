@@ -2,7 +2,7 @@ from scipy import special as sc
 import random
 # Constants, experiment parameters
 POPULATION_SIZE = 30 #Numero de individuos utilizados ao longo das gerações
-MIXING_NUMBER = 2 # Numero de pontos de cruzamento
+MIXING_NUMBER = 4 # Numero de pontos de cruzamento
 MUTATION_RATE = 0.05 #Chance de cada filho sofrer mutação (5%)
 MAPA_CIDADES = {
     "Belo Horizonte": {"Contagem": 21, "Nova Lima": 23, "Sabara": 18, "Brumadinho": 56, "Santa Luzia": 27},
@@ -129,12 +129,11 @@ def crossover(parents):
 def mutate(seq):
     for row in range(len(seq)):
         if random.random() < MUTATION_RATE:
-            #seq[row] = random.randrange(POPULATION_SIZE)
-            print(seq[row][random.randrange(len(seq[row])-1)])
-            print(seq[row])
-            print(len(seq[row]))
-            print("-----------------------")
-
+            rand1 =  random.randrange(len(seq[row])-1)
+            rand2 =  random.randrange(len(seq[row])-1)
+            troca = seq[row][rand1]
+            seq[row][rand1] = seq[row][rand2]
+            seq[row][rand2] = troca
     return seq
 
 def evolution(population):
@@ -157,21 +156,6 @@ def evolution(population):
 
     return new_gen
 
-def print_found_goal(population, to_print=True):
-    for ind in population:
-        score = fitness_score(MAPA_CIDADES,ind)
-        if to_print:
-            print(f'{ind}. Score: {score}')
-        if score == sc.comb(POPULATION_SIZE, 2):
-            if to_print:
-                print('Solution found')
-            return True
-
-    if to_print:
-        print('Solution not found')
-    return False
-
-
 
 
 rota_aleatoria_gerada = generate_population("Belo Horizonte", "Raposos")
@@ -185,26 +169,25 @@ rota_aleatoria_gerada = generate_population("Belo Horizonte", "Raposos")
 
 
 rota_select = selection(rota_aleatoria_gerada)
-#cross = crossover(rota_select)
+cross = crossover(rota_select)
 mutates = mutate(rota_aleatoria_gerada)
     
-#for i in range(len(rota_select)):
-#    print(f"Selecionados - Rota {i+1}")
-#    print(rota_select[i]) 
-#    distancia_total_exemplo = fitness_score(MAPA_CIDADES, rota_select[i])
-#    print(f"A distância total da rota é: {distancia_total_exemplo}\n")
+for i in range(len(rota_select)):
+    print(f"Selecionados - Rota {i+1}")
+    print(rota_select[i]) 
+    distancia_total_exemplo = fitness_score(MAPA_CIDADES, rota_select[i])
+    print(f"A distância total da rota é: {distancia_total_exemplo}\n")
     
 
-#for i in range(len(cross)):
-#    print(cross)
-#    print(f"Crossover - Rota {i+1}")
-#    print(cross[i]) 
-#    print(f"A distância total da rota cross é: {fitness_score(MAPA_CIDADES, cross[i])}\n")
+for i in range(len(cross)):
+    print(f"Crossover - Rota {i+1}")
+    print(cross[i]) 
+    print(f"A distância total da rota cross é: {fitness_score(MAPA_CIDADES, cross[i])}\n")
 
 #for i in range(len(mutates)):
-    #print(f"Crossover Mutante - Rota {i+1}")
-    #print(mutates[i]) 
-    #print(f"A distância total da rota cross é: {fitness_score(MAPA_CIDADES, mutates[i])}\n")
+#    print(f"Crossover Mutante - Rota {i+1}")
+#    print(mutates[i]) 
+#    print(f"A distância total da rota cross é: {fitness_score(MAPA_CIDADES, mutates[i])}\n")
 
  
  
