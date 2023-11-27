@@ -1,7 +1,7 @@
 from scipy import special as sc
 import random
 # Constants, experiment parameters
-POPULATION_SIZE = 10 #Numero de individuos utilizados ao longo das gerações
+POPULATION_SIZE = 30 #Numero de individuos utilizados ao longo das gerações
 MIXING_NUMBER = 2 # Numero de pontos de cruzamento
 MUTATION_RATE = 0.05 #Chance de cada filho sofrer mutação (5%)
 MAPA_CIDADES = {
@@ -29,15 +29,17 @@ def generate_population(cidadeInicial, cidadeFinal):
 
 def fitness_score(cidades, rota):
     distanciaTotal = 0
+    if type(rota) is int:
+        return 200000
+    else:
+        for row in range(len(rota)-1): #Inicializa o loop baseado no tamanho da rota 
+            cidadeAtual = rota[row]
+            proximaCidade = rota[row+1]
 
-    for row in range(len(rota)-1): #Inicializa o loop baseado no tamanho da rota 
-        cidadeAtual = rota[row]
-        proximaCidade = rota[row+1]
-
-        if cidadeAtual in cidades and proximaCidade in cidades[cidadeAtual]:
-            distanciaTotal += cidades[cidadeAtual][proximaCidade] #Adiciona valor da distancia
-        else:
-            return "Rota inválida"
+            if cidadeAtual in cidades and proximaCidade in cidades[cidadeAtual]:
+                distanciaTotal += cidades[cidadeAtual][proximaCidade] #Adiciona valor da distancia
+            else:
+                return 100000
 
     return distanciaTotal
 
@@ -77,7 +79,8 @@ def selection(population):
     i = 0
     for ind in population:
         #select parents with probability proportional to their fitness score
-        if random.randrange(int(sc.comb(POPULATION_SIZE, 2)*2.8)) < fitness_score(MAPA_CIDADES,population[i]):
+            
+        if random.randrange(int(sc.comb(POPULATION_SIZE, 2)*2.0)) < fitness_score(MAPA_CIDADES,population[i]):
             parents.append(ind)
         i = i+1
 
@@ -104,7 +107,8 @@ def crossover(parents):
 
             #sublist of parent to be crossed
             parent_part = perm[parent_idx][start_pt:cross_point]
-            offspring.append(parent_part)
+            if type(parent_part) is not int:
+                offspring.append(parent_part)
 
             #update index pointer
             start_pt = cross_point
@@ -112,13 +116,60 @@ def crossover(parents):
         #last parent
         last_parent = perm[-1]
         parent_part = last_parent[cross_point:]
-        offspring.append(parent_part)
+        if type(parent_part) is not int:
+            offspring.append(parent_part)
 
         #flatten the list since append works kinda differently
-        offsprings.append(list(itertools.chain(*offspring)))
-
+        if type(parent_part) is not int:
+            offsprings.append(list(itertools.chain(*offspring)))
+ 
+        offsprings = [value for value in offsprings if type(value) != int]
     return offsprings
 
+def mutate(seq):
+    for row in range(len(seq)):
+        if random.random() < MUTATION_RATE:
+            #seq[row] = random.randrange(POPULATION_SIZE)
+            print(seq[row][random.randrange(len(seq[row])-1)])
+            print(seq[row])
+            print(len(seq[row]))
+            print("-----------------------")
+
+    return seq
+
+def evolution(population):
+    #select individuals to become parents
+    parents = selection(population)
+
+    #recombination. Create new offsprings
+    offsprings = crossover(parents)
+
+    #mutation
+    offsprings = list(map(mutate, offsprings))
+
+    #introduce top-scoring individuals from previous generation and keep top fitness individuals
+    new_gen = offsprings
+
+    for ind in population:
+        new_gen.append(ind)
+
+    new_gen = sorted(new_gen, key=lambda ind: fitness_score(MAPA_CIDADES,ind), reverse=True)[:POPULATION_SIZE]
+
+    return new_gen
+
+def print_found_goal(population, to_print=True):
+    for ind in population:
+        score = fitness_score(MAPA_CIDADES,ind)
+        if to_print:
+            print(f'{ind}. Score: {score}')
+        if score == sc.comb(POPULATION_SIZE, 2):
+            if to_print:
+                print('Solution found')
+            return True
+
+    if to_print:
+        print('Solution not found')
+    return False
 
 
 
@@ -126,25 +177,42 @@ def crossover(parents):
 rota_aleatoria_gerada = generate_population("Belo Horizonte", "Raposos")
 
 
-for i in range(len(rota_aleatoria_gerada)):
-    print(f"Rota {i+1}")
-    print(rota_aleatoria_gerada[i]) 
-    distancia_total_exemplo = fitness_score(MAPA_CIDADES, rota_aleatoria_gerada[i])
-    print(f"A distância total da rota é: {distancia_total_exemplo}\n")
+#for i in range(len(rota_aleatoria_gerada)):
+#    print(f"Rota {i+1}")
+#    print(rota_aleatoria_gerada[i]) 
+#    distancia_total_exemplo = fitness_score(MAPA_CIDADES, rota_aleatoria_gerada[i])
+#    print(f"A distância total da rota é: {distancia_total_exemplo}\n")
 
 
 rota_select = selection(rota_aleatoria_gerada)
-cross = crossover(rota_select)
-
-for i in range(len(cross)):
-    print(cross[i]) 
+#cross = crossover(rota_select)
+mutates = mutate(rota_aleatoria_gerada)
+    
 #for i in range(len(rota_select)):
-#    print(f"Rota {i+1}")
+#    print(f"Selecionados - Rota {i+1}")
 #    print(rota_select[i]) 
-#    print(cross[i]) 
 #    distancia_total_exemplo = fitness_score(MAPA_CIDADES, rota_select[i])
 #    print(f"A distância total da rota é: {distancia_total_exemplo}\n")
+    
+
+#for i in range(len(cross)):
+#    print(cross)
+#    print(f"Crossover - Rota {i+1}")
+#    print(cross[i]) 
 #    print(f"A distância total da rota cross é: {fitness_score(MAPA_CIDADES, cross[i])}\n")
+
+#for i in range(len(mutates)):
+    #print(f"Crossover Mutante - Rota {i+1}")
+    #print(mutates[i]) 
+    #print(f"A distância total da rota cross é: {fitness_score(MAPA_CIDADES, mutates[i])}\n")
+
+ 
+ 
+ 
+ 
+
+
+
 
  
 

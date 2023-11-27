@@ -1,39 +1,35 @@
-# Create the routine to implement the evolution
-def evolution(population):
-    #select individuals to become parents
-    parents = selection(population)
+import random
+ 
 
-    #recombination. Create new offsprings
-    offsprings = crossover(parents)
+grafo_distancias ={
+    "Belo Horizonte": {"Contagem": 21, "Nova Lima": 23, "Sabara": 18, "Brumadinho": 56, "Santa Luzia": 27},
+    "Contagem": {"Belo Horizonte": 21, "Betim": 17},
+    "Betim": {"Contagem": 17, "Mario Campos": 18},
+    "Mario Campos": {"Betim": 18, "Brumadinho": 13},
+    "Nova Lima": {"Belo Horizonte": 23, "Raposos": 8, "Sabara": 16, "Brumadinho": 62},
+    "Sabara": {"Belo Horizonte": 18, "Nova Lima": 16, "Raposos": 12, "Santa Luzia": 24, "Santa Luzia": 50},
+    "Raposos": {"Nova Lima": 16, "Sabara": 12},
+    "Brumadinho": {"Belo Horizonte": 56, "Mario Campos": 13, "Nova Lima": 62},
+    "Santa Luzia": {"Belo Horizonte": 27, "Lagoa Santa": 26, "Sabara": 24},
+    "Lagoa Santa": {"Santa Luzia": 26, "Sabara": 50}
+}
 
-    #mutation
-    offsprings = list(map(mutate, offsprings))
+import random
 
-    #introduce top-scoring individuals from previous generation and keep top fitness individuals
-    new_gen = offsprings
+def trocar_posicao_cidades(variavel, cidade1, cidade2):
+    if cidade1 not in variavel or cidade2 not in variavel:
+        return "Pelo menos uma das cidades não encontrada na variável"
 
-    for ind in population:
-        new_gen.append(ind)
+    index_cidade1 = variavel.index(cidade1)
+    index_cidade2 = variavel.index(cidade2)
 
-    new_gen = sorted(new_gen, key=lambda ind: fitness_score(ind), reverse=True)[:POPULATION_SIZE]
+    variavel[index_cidade1], variavel[index_cidade2] = variavel[index_cidade2], variavel[index_cidade1]
 
-    return new_gen
+    return variavel
 
+# Exemplo de uso
+rota_exemplo = ["Belo Horizonte", "Contagem", "Betim", "Nova Lima", "Sabara"]
+nova_rota = trocar_posicao_cidades(rota_exemplo, "Contagem", "Nova Lima")
 
-def selection(population):
-    parents = []
-
-    for ind in population:
-        #select parents with probability proportional to their fitness score
-        if random.randrange(sc.comb(NUM_QUEENS, 2)*2) < fitness_score(ind):
-            parents.append(ind)
-
-
-    return parents
-
-
-
-
-from scipy import special as sc
-
-print(sc.comb(10,2)*2.8)
+print(f"Rota Original: {rota_exemplo}")
+print(f"Nova Rota: {nova_rota}")
