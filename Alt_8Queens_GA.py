@@ -1,9 +1,9 @@
 from scipy import special as sc
 import random
 # Constants, experiment parameters
-POPULATION_SIZE = 30 #Numero de individuos utilizados ao longo das gerações
+POPULATION_SIZE = 8 #Numero de individuos utilizados ao longo das gerações
 MIXING_NUMBER = 4 # Numero de pontos de cruzamento
-MUTATION_RATE = 0.05 #Chance de cada filho sofrer mutação (5%)
+MUTATION_RATE = 0.90 #Chance de cada filho sofrer mutação (5%)
 MAPA_CIDADES = {
     "Belo Horizonte": {"Contagem": 21, "Nova Lima": 23, "Sabara": 18, "Brumadinho": 56, "Santa Luzia": 27},
     "Contagem": {"Belo Horizonte": 21, "Betim": 17},
@@ -18,6 +18,7 @@ MAPA_CIDADES = {
 }
 
 
+ 
 # Create the initial population (solutions)
 def generate_population(cidadeInicial):
     population = []
@@ -106,8 +107,7 @@ def crossover(parents):
 
             #sublist of parent to be crossed
             parent_part = perm[parent_idx][start_pt:cross_point]
-            if type(parent_part) is not int:
-                offspring.append(parent_part)
+            offspring.append(parent_part)
 
             #update index pointer
             start_pt = cross_point
@@ -115,14 +115,11 @@ def crossover(parents):
         #last parent
         last_parent = perm[-1]
         parent_part = last_parent[cross_point:]
-        if type(parent_part) is not int:
-            offspring.append(parent_part)
+        offspring.append(parent_part)
 
         #flatten the list since append works kinda differently
-        if type(parent_part) is not int:
-            offsprings.append(list(itertools.chain(*offspring)))
- 
-        offsprings = [value for value in offsprings if type(value) != int]
+        offsprings.append(list(itertools.chain(*offspring)))
+
     return offsprings
 
 
@@ -136,10 +133,11 @@ def mutate(seq):
             possibilidadeEntrada = [vizinho for vizinho in MAPA_CIDADES[cidadeAnterior] if vizinho not in cidadeAlt]  
             escolha_aleatoria = random.choice(possibilidadeEntrada)
             if cidadePosterior in MAPA_CIDADES[escolha_aleatoria]:
-                print("PASSEI")
-                print("ROTA ANTIGA")
+                print("Mutação ocorreu!")
+                print("Rota Antiga")
                 print(seq[row])
                 seq[row][rand1] = escolha_aleatoria
+                print("Rota nova")
                 print(seq[row])
                 return seq
 
@@ -169,46 +167,65 @@ def evolution(population):
 # Print the solution
 def print_found_goal(population, to_print=True):
     for ind in population:
+        ctrl = 0;
         score = fitness_score(MAPA_CIDADES,ind)
         if to_print:
             print(f'{ind}. Score: {score}')
-        if score == sc.comb(POPULATION_SIZE, 2):
+        if population[ctrl][0] == population[ctrl][-1] and score < 100000:
             if to_print:
                 print('Solution found')
             return True
-
-    if to_print:
-        print('Solution not found')
+        ctrl = ctrl+1
     return False
 
 
 
+#Representação do indivíduo e função fitness
 rota_aleatoria_gerada = generate_population("Belo Horizonte")
+print("Rostas geradas inicialmente")
 
-
-#for i in range(len(rota_aleatoria_gerada)):
-#    print(f"Rota {i+1}")
-#    print(rota_aleatoria_gerada[i])
-#    distancia_total_exemplo = fitness_score(MAPA_CIDADES, rota_aleatoria_gerada[i])
-#    print(f"A distância total da rota é: {distancia_total_exemplo}\n")
-
-
-cros = selection(rota_aleatoria_gerada)
-cros = crossover(rota_aleatoria_gerada)
-
-
-for i in range(len(cros)):
-    print(f"Rota - Cross {i+1}")
-    print(cros[i])
-    distancia_total_exemplo = fitness_score(MAPA_CIDADES, cros[i])
+for i in range(len(rota_aleatoria_gerada)):
+    print(f"Rota Inicial - {i+1}")
+    print(rota_aleatoria_gerada[i])
+    distancia_total_exemplo = fitness_score(MAPA_CIDADES, rota_aleatoria_gerada[i])
     print(f"A distância total da rota é: {distancia_total_exemplo}\n")
 
+print("======================================================================================================================================")
+
+cros1 = selection(rota_aleatoria_gerada)
+cros = crossover(cros1)
+
+for i in range(len(cros1)):
+    print(f"Rota de Pais {i+1}")
+    print(cros1[i])
+    distancia_total_exemplo = fitness_score(MAPA_CIDADES, cros1[i])
+    print(f"A distância total da rota é: {distancia_total_exemplo}\n")
+
+x = 0
+while x < 10 and len(cros) > 0:
+    print(f"Rota - Crossover {x+1}")
+    print(cros[x])
+    distancia_total_exemplo = fitness_score(MAPA_CIDADES, cros[x])
+    print(f"A distância total da rota é: {distancia_total_exemplo}\n")
+    x = x + 1
+
+print("======================================================================================================================================")
+
+#Evolução das gerações 
+y = 0
+pop = rota_aleatoria_gerada
+while y < 40:
+    print(" ")
+    print(f'Generation: {y+1}')
+    print_found_goal(pop)
+    pop = evolution(pop)  
+    y = y+1
+ 
+print("======================================================================================================================================")
+
 mutate(rota_aleatoria_gerada)
- 
- 
- 
 
-
+print(rota_aleatoria_gerada[1][0])
 
 
  
