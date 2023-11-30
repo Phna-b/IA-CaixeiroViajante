@@ -10,7 +10,7 @@ MAPA_CIDADES = {
     "Betim": {"Contagem": 17, "Mario Campos": 18},
     "Mario Campos": {"Betim": 18, "Brumadinho": 13},
     "Nova Lima": {"Belo Horizonte": 23, "Raposos": 8, "Sabara": 16, "Brumadinho": 62},
-    "Sabara": {"Belo Horizonte": 18, "Nova Lima": 16, "Raposos": 12, "Santa Luzia": 24, "Santa Luzia": 50},
+    "Sabara": {"Belo Horizonte": 18, "Nova Lima": 16, "Raposos": 12, "Santa Luzia": 24, "Lagoa Santa": 50},
     "Raposos": {"Nova Lima": 16, "Sabara": 12},
     "Brumadinho": {"Belo Horizonte": 56, "Mario Campos": 13, "Nova Lima": 62},
     "Santa Luzia": {"Belo Horizonte": 27, "Lagoa Santa": 26, "Sabara": 24},
@@ -19,58 +19,57 @@ MAPA_CIDADES = {
 
 
 # Create the initial population (solutions)
-def generate_population(cidadeInicial, cidadeFinal):
+def generate_population(cidadeInicial):
     population = []
-
     for individual in range(POPULATION_SIZE):
-        population.append(rota_aleatoria(MAPA_CIDADES, cidadeInicial, cidadeFinal))
+        population.append(rota_aleatoria_volta_origem(MAPA_CIDADES, cidadeInicial))
     return population
-
 
 def fitness_score(cidades, rota):
     distanciaTotal = 0
-    if type(rota) is int:
-        return 200000
-    else:
-        for row in range(len(rota)-1): #Inicializa o loop baseado no tamanho da rota 
-            cidadeAtual = rota[row]
-            proximaCidade = rota[row+1]
+    for row in range(len(rota)-1): #Inicializa o loop baseado no tamanho da rota 
+        cidadeAtual = rota[row]
+        proximaCidade = rota[row+1]
 
-            if cidadeAtual in cidades and proximaCidade in cidades[cidadeAtual]:
-                distanciaTotal += cidades[cidadeAtual][proximaCidade] #Adiciona valor da distancia
-            else:
-                return 100000
+        if cidadeAtual in cidades and proximaCidade in cidades[cidadeAtual]:
+            distanciaTotal += cidades[cidadeAtual][proximaCidade] #Adiciona valor da distancia
+        else:
+            return 100000
 
     return distanciaTotal
 
 
 
-def rota_aleatoria(grafo, cidade_inicial, cidade_final):
-    # Verifica se as cidades existem no grafo
-    if cidade_inicial not in grafo or cidade_final not in grafo:
-        return "Cidades não encontradas no grafo"
+import random
+
+def rota_aleatoria_volta_origem(grafo, cidade_inicial):
+    # Verifica se a cidade inicial existe no grafo
+    if cidade_inicial not in grafo:
+        return "Cidade inicial não encontrada no grafo"
 
     # Inicializa a rota com a cidade inicial
     rota = [cidade_inicial]
 
-    # Enquanto não atingir a cidade final
-    while rota[-1] != cidade_final:
+    # Enquanto não atingir a cidade inicial novamente
+    x = 0
+    while x < (len(MAPA_CIDADES)):
         cidade_atual = rota[-1]
 
-        # Obtém os vizinhos da cidade atual
-        vizinhos = [vizinho for vizinho in grafo[cidade_atual] if vizinho not in rota]
+        # Obtém os vizinhos da cidade atual que ainda não foram visitados
+        vizinhos_nao_visitados = [vizinho for vizinho in grafo[cidade_atual] if vizinho not in rota]
 
-        # Se não houver mais vizinhos disponíveis, retorna a rota
-        if not vizinhos:
-            rota = rota_aleatoria(grafo, cidade_inicial, cidade_final)
-            return rota
-
-        # Escolhe aleatoriamente um vizinho
-        vizinho_aleatorio = random.choice(vizinhos)
-     
-        rota.append(vizinho_aleatorio)
-
+        # Se não houver mais vizinhos disponíveis, volta à cidade inicial
+        if not vizinhos_nao_visitados:
+            rota.append(cidade_inicial)
+        else:
+            # Escolhe aleatoriamente um vizinho não visitado
+            vizinho_aleatorio = random.choice(vizinhos_nao_visitados)
+            rota.append(vizinho_aleatorio)
+        x = x+1
     return rota
+
+ 
+
  
 
 
@@ -79,8 +78,8 @@ def selection(population):
     i = 0
     for ind in population:
         #select parents with probability proportional to their fitness score
-            
-        if random.randrange(int(sc.comb(POPULATION_SIZE, 2)*2.0)) < fitness_score(MAPA_CIDADES,population[i]):
+        
+        if random.randrange(int(sc.comb(POPULATION_SIZE, 2)*2.0)) < fitness_score(MAPA_CIDADES,population[i]) and  fitness_score(MAPA_CIDADES,population[i]) < 100000 :
             parents.append(ind)
         i = i+1
 
@@ -126,14 +125,24 @@ def crossover(parents):
         offsprings = [value for value in offsprings if type(value) != int]
     return offsprings
 
+
 def mutate(seq):
     for row in range(len(seq)):
         if random.random() < MUTATION_RATE:
-            rand1 =  random.randrange(len(seq[row])-1)
-            rand2 =  random.randrange(len(seq[row])-1)
-            troca = seq[row][rand1]
-            seq[row][rand1] = seq[row][rand2]
-            seq[row][rand2] = troca
+            rand1 =  random.randrange(1,len(seq[row])-1)
+            cidadeAlt =str(seq[row][rand1])
+            cidadeAnterior = str(seq[row][rand1-1])
+            cidadePosterior = str(seq[row][rand1+1])
+            possibilidadeEntrada = [vizinho for vizinho in MAPA_CIDADES[cidadeAnterior] if vizinho not in cidadeAlt]  
+            escolha_aleatoria = random.choice(possibilidadeEntrada)
+            if cidadePosterior in MAPA_CIDADES[escolha_aleatoria]:
+                print("PASSEI")
+                print("ROTA ANTIGA")
+                print(seq[row])
+                seq[row][rand1] = escolha_aleatoria
+                print(seq[row])
+                return seq
+
     return seq
 
 def evolution(population):
@@ -157,39 +166,44 @@ def evolution(population):
     return new_gen
 
 
+# Print the solution
+def print_found_goal(population, to_print=True):
+    for ind in population:
+        score = fitness_score(MAPA_CIDADES,ind)
+        if to_print:
+            print(f'{ind}. Score: {score}')
+        if score == sc.comb(POPULATION_SIZE, 2):
+            if to_print:
+                print('Solution found')
+            return True
 
-rota_aleatoria_gerada = generate_population("Belo Horizonte", "Raposos")
+    if to_print:
+        print('Solution not found')
+    return False
+
+
+
+rota_aleatoria_gerada = generate_population("Belo Horizonte")
 
 
 #for i in range(len(rota_aleatoria_gerada)):
 #    print(f"Rota {i+1}")
-#    print(rota_aleatoria_gerada[i]) 
+#    print(rota_aleatoria_gerada[i])
 #    distancia_total_exemplo = fitness_score(MAPA_CIDADES, rota_aleatoria_gerada[i])
 #    print(f"A distância total da rota é: {distancia_total_exemplo}\n")
 
 
-rota_select = selection(rota_aleatoria_gerada)
-cross = crossover(rota_select)
-mutates = mutate(rota_aleatoria_gerada)
-    
-for i in range(len(rota_select)):
-    print(f"Selecionados - Rota {i+1}")
-    print(rota_select[i]) 
-    distancia_total_exemplo = fitness_score(MAPA_CIDADES, rota_select[i])
+cros = selection(rota_aleatoria_gerada)
+cros = crossover(rota_aleatoria_gerada)
+
+
+for i in range(len(cros)):
+    print(f"Rota - Cross {i+1}")
+    print(cros[i])
+    distancia_total_exemplo = fitness_score(MAPA_CIDADES, cros[i])
     print(f"A distância total da rota é: {distancia_total_exemplo}\n")
-    
 
-for i in range(len(cross)):
-    print(f"Crossover - Rota {i+1}")
-    print(cross[i]) 
-    print(f"A distância total da rota cross é: {fitness_score(MAPA_CIDADES, cross[i])}\n")
-
-#for i in range(len(mutates)):
-#    print(f"Crossover Mutante - Rota {i+1}")
-#    print(mutates[i]) 
-#    print(f"A distância total da rota cross é: {fitness_score(MAPA_CIDADES, mutates[i])}\n")
-
- 
+mutate(rota_aleatoria_gerada)
  
  
  
