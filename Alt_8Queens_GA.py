@@ -1,9 +1,12 @@
 from scipy import special as sc
 import random
+import time
+
 # Constants, experiment parameters
 POPULATION_SIZE = 8 #Numero de individuos utilizados ao longo das gerações
 MIXING_NUMBER = 4 # Numero de pontos de cruzamento
 MUTATION_RATE = 0.90 #Chance de cada filho sofrer mutação (5%)
+
 MAPA_CIDADES = {
     "Belo Horizonte": {"Contagem": 21, "Nova Lima": 23, "Sabara": 18, "Brumadinho": 56, "Santa Luzia": 27},
     "Contagem": {"Belo Horizonte": 21, "Betim": 17},
@@ -28,14 +31,14 @@ def generate_population(cidadeInicial):
 
 def fitness_score(cidades, rota):
     distanciaTotal = 0
-    for row in range(len(rota)-1): #Inicializa o loop baseado no tamanho da rota 
+    for row in range(len(rota)-1):  
         cidadeAtual = rota[row]
         proximaCidade = rota[row+1]
 
         if cidadeAtual in cidades and proximaCidade in cidades[cidadeAtual]:
             distanciaTotal += cidades[cidadeAtual][proximaCidade] #Adiciona valor da distancia
         else:
-            return 100000
+            return 100000 #Rota impossível
 
     return distanciaTotal
 
@@ -77,9 +80,7 @@ def rota_aleatoria_volta_origem(grafo, cidade_inicial):
 def selection(population):
     parents = []
     i = 0
-    for ind in population:
-        #select parents with probability proportional to their fitness score
-        
+    for ind in population: 
         if random.randrange(int(sc.comb(POPULATION_SIZE, 2)*2.0)) < fitness_score(MAPA_CIDADES,population[i]) and  fitness_score(MAPA_CIDADES,population[i]) < 100000 :
             parents.append(ind)
         i = i+1
@@ -166,16 +167,15 @@ def evolution(population):
 
 # Print the solution
 def print_found_goal(population, to_print=True):
+    media = 0
     for ind in population:
         ctrl = 0;
         score = fitness_score(MAPA_CIDADES,ind)
+        media += score
         if to_print:
             print(f'{ind}. Score: {score}')
-        if population[ctrl][0] == population[ctrl][-1] and score < 100000:
-            if to_print:
-                print('Solution found')
-            return True
-        ctrl = ctrl+1
+        ctrl = ctrl+1 
+    print(f"Média da geração: {media/POPULATION_SIZE}")
     return False
 
 
@@ -214,18 +214,21 @@ print("=========================================================================
 #Evolução das gerações 
 y = 0
 pop = rota_aleatoria_gerada
+inicio = time.time()
 while y < 40:
     print(" ")
     print(f'Generation: {y+1}')
     print_found_goal(pop)
     pop = evolution(pop)  
-    y = y+1
- 
+    y += 1
+fim = time.time()
+
+print(f"\nTempo de execução em segundos: {fim - inicio}")
 print("======================================================================================================================================")
 
-mutate(rota_aleatoria_gerada)
+#mutate(rota_aleatoria_gerada)
 
-print(rota_aleatoria_gerada[1][0])
+#print(rota_aleatoria_gerada[1][0])
 
 
  
